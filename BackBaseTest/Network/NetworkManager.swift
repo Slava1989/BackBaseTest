@@ -6,9 +6,8 @@
 //
 
 import Foundation
-import SwiftyJSON
 
-class NetworkManeger {
+class NetworkManager {
     
     let urlString = "https://raw.githubusercontent.com/BackbaseRecruitment/city-search-ios-Slava1989/main/cities.json?token=GHSAT0AAAAAABPGD7KGDR4ZZFGS4XOQBS3SYTK45QQ"
     
@@ -40,16 +39,18 @@ class NetworkManeger {
         task.resume()
     }
     
-    func loadJsonFromFile(completion: @escaping ([City]?) -> ()) {
-        if let url = Bundle.main.url(forResource: "Cities", withExtension: "json") {
-            do {
-                let data = try Data(contentsOf: url)
-                let cities = try JSONDecoder().decode([City].self, from: data)
-                completion(cities)
-            } catch {
-                print("error:\(error)")
-                completion(nil)
-            }
+    func loadJsonFromFile() -> [City]? {
+        guard let url = Bundle.main.url(forResource: "Cities", withExtension: "json") else {
+            return nil
+        }
+        
+        do {
+            let data = try Data(contentsOf: url)
+            let cities = try JSONDecoder().decode([City].self, from: data)
+            return cities
+        } catch {
+            print("error:\(error)")
+            return nil
         }
     }
     

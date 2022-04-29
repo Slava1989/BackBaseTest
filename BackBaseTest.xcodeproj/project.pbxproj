@@ -13,7 +13,7 @@
 		BA2DE27D281845E20026A6B8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA2DE27B281845E20026A6B8 /* Main.storyboard */; };
 		BA2DE27F281845E30026A6B8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA2DE27E281845E30026A6B8 /* Assets.xcassets */; };
 		BA2DE282281845E30026A6B8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA2DE280281845E30026A6B8 /* LaunchScreen.storyboard */; };
-		BA2DE28B28184AD30026A6B8 /* NetworkManeger.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA2DE28A28184AD30026A6B8 /* NetworkManeger.swift */; };
+		BA2DE28B28184AD30026A6B8 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA2DE28A28184AD30026A6B8 /* NetworkManager.swift */; };
 		BA2DE28E28184B460026A6B8 /* CityModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA2DE28D28184B460026A6B8 /* CityModel.swift */; };
 		BA53148F28187B8A00A25802 /* CityTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA53148D28187B8A00A25802 /* CityTableViewCell.swift */; };
 		BA53149028187B8A00A25802 /* CityTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = BA53148E28187B8A00A25802 /* CityTableViewCell.xib */; };
@@ -44,7 +44,7 @@
 		BA2DE27E281845E30026A6B8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BA2DE281281845E30026A6B8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BA2DE283281845E30026A6B8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		BA2DE28A28184AD30026A6B8 /* NetworkManeger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManeger.swift; sourceTree = "<group>"; };
+		BA2DE28A28184AD30026A6B8 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		BA2DE28D28184B460026A6B8 /* CityModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityModel.swift; sourceTree = "<group>"; };
 		BA53148D28187B8A00A25802 /* CityTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityTableViewCell.swift; sourceTree = "<group>"; };
 		BA53148E28187B8A00A25802 /* CityTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CityTableViewCell.xib; sourceTree = "<group>"; };
@@ -113,7 +113,7 @@
 		BA2DE28928184AC60026A6B8 /* Network */ = {
 			isa = PBXGroup;
 			children = (
-				BA2DE28A28184AD30026A6B8 /* NetworkManeger.swift */,
+				BA2DE28A28184AD30026A6B8 /* NetworkManager.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -281,7 +281,7 @@
 			files = (
 				BA53148F28187B8A00A25802 /* CityTableViewCell.swift in Sources */,
 				BA2DE28E28184B460026A6B8 /* CityModel.swift in Sources */,
-				BA2DE28B28184AD30026A6B8 /* NetworkManeger.swift in Sources */,
+				BA2DE28B28184AD30026A6B8 /* NetworkManager.swift in Sources */,
 				BA2DE27A281845E20026A6B8 /* CitiesViewController.swift in Sources */,
 				BA2DE276281845E20026A6B8 /* AppDelegate.swift in Sources */,
 				BAC622672819A1B400997DA3 /* CityScreenPresenter.swift in Sources */,

@@ -8,8 +8,11 @@
 import UIKit
 
 class CitiesViewController: UIViewController {
-    var presenter: CityScreenPresenter?
+    var sortedCities: [City] = []
+    var copyArray: [City] = []
+    var dict: [String: [City]] = [:]
     
+    var presenter: CityScreenPresenter?
     var tableBottomConstraint: NSLayoutConstraint?
     
     private lazy var textField: UITextField = {
@@ -20,7 +23,7 @@ class CitiesViewController: UIViewController {
         textField.placeholder = "Filter predicate"
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 15, height: textField.frame.height))
         textField.leftViewMode = .always
-
+        
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
@@ -29,6 +32,15 @@ class CitiesViewController: UIViewController {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
+    }()
+    
+    private lazy var emptyLabel: UILabel = {
+        let label = UILabel()
+        let font = UIFont.systemFont(ofSize: 40)
+        label.attributedText = NSAttributedString(string: "No Matches",
+                                                  attributes: [NSAttributedString.Key.font: font])
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
     
     private lazy var indicatorView: UIActivityIndicatorView = {
@@ -54,10 +66,11 @@ class CitiesViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillAppear), name: UIResponder.keyboardWillShowNotification, object: nil)
         
         configureTableView()
-        textField.delegate = presenter
+        textField.delegate = self
         configureUI()
         
         presenter?.getCities() { [weak self] in
+            self?.textField.isHidden = false
             self?.tableView.reloadData()
         }
     }
@@ -72,7 +85,7 @@ class CitiesViewController: UIViewController {
         let keyboardHeight = keyboardSize.size.height
         updateBottomConstraint(with: -keyboardHeight)
     }
-
+    
     @objc func keyboardWillDisappear(_ notification: Notification) {
         updateBottomConstraint(with: 0)
     }
@@ -89,8 +102,8 @@ class CitiesViewController: UIViewController {
     
     private func configureTableView() {
         tableView.backgroundColor = .clear
-        tableView.dataSource = presenter
-        tableView.delegate = presenter
+        tableView.dataSource = self
+        tableView.delegate = self
         tableView.register(CityTableViewCell.self, forCellReuseIdentifier: "CityTableViewCell")
     }
     
@@ -98,6 +111,10 @@ class CitiesViewController: UIViewController {
         view.addSubview(textField)
         view.addSubview(tableView)
         view.addSubview(indicatorView)
+        view.addSubview(emptyLabel)
+        
+        emptyLabel.isHidden = true
+        textField.isHidden = true
         
         tableBottomConstraint = NSLayoutConstraint(
             item: tableView,
@@ -109,16 +126,19 @@ class CitiesViewController: UIViewController {
             constant: 0
         )
         tableBottomConstraint?.isActive = true
-
+        
         NSLayoutConstraint.activate([
+            emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            
             textField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
             textField.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20),
             textField.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20),
             textField.heightAnchor.constraint(equalToConstant: 40),
             
             tableView.topAnchor.constraint(equalTo: textField.bottomAnchor,constant: 10),
-            tableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
-            tableView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
+            tableView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            tableView.rightAnchor.constraint(equalTo: view.rightAnchor),
             
             indicatorView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             indicatorView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
@@ -126,7 +146,74 @@ class CitiesViewController: UIViewController {
     }
 }
 
+extension CitiesViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        guard !sortedCities.isEmpty else {
+            return copyArray.count
+        }
+        
+        return sortedCities.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "CityTableViewCell", for: indexPath) as? CityTableViewCell else {
+            return UITableViewCell()
+        }
+        
+        guard !sortedCities.isEmpty else {
+            let city = copyArray[indexPath.row]
+            cell.setupCell(city: city.name, country: city.country, coordinates: city.coord)
+            return cell
+        }
+        
+        let city = sortedCities[indexPath.row]
+        cell.setupCell(city: city.name, country: city.country, coordinates: city.coord)
+        return cell
+        
+    }
+}
+
+extension CitiesViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 70
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let city = sortedCities.isEmpty ? copyArray[indexPath.row] : sortedCities[indexPath.row]
+        let mapVC = MapViewController(city: city)
+        navigationController?.pushViewController(mapVC, animated: true)
+        
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+
+extension CitiesViewController: UITextFieldDelegate {
+    func textFieldDidChangeSelection(_ textField: UITextField) {
+        guard let inputText = textField.text,
+              inputText.count > 0
+        else {
+            sortedCities = []
+            tableView.reloadData()
+            return
+        }
+        
+        sortedCities = copyArray
+        let searchArray = dict[String(inputText.prefix(1)).lowercased()]
+        presenter?.filterArray(inputText: inputText, searchArray: searchArray)
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+}
+
 extension CitiesViewController: CityScreenPresenterInput {
+    func updateEmptyView(hideTable: Bool, hideMessage: Bool) {
+        tableView.isHidden = hideTable
+        emptyLabel.isHidden = hideMessage
+    }
+    
     func startIndicatorView() {
         indicatorView.startAnimating()
         indicatorView.isHidden = false

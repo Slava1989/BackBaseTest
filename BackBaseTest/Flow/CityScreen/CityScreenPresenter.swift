@@ -11,97 +11,23 @@ protocol CityScreenPresenterOutput {
     func getCities(completion: @escaping () -> ())
     func sortCities(cityArray: [City]) -> [City]
     func searchElements(in array: [City], inputText: String) -> [City]
+    func filterArray(inputText: String, searchArray: [City]?)
 }
 
 protocol CityScreenPresenterInput {
+    var sortedCities: [City] { get set }
+    var copyArray: [City] { get set }
+    var dict: [String: [City]] { get set }
+    
     func startIndicatorView()
     func stopIndicatorView()
     func reloadTable()
+    func updateEmptyView(hideTable: Bool, hideMessage: Bool)
 }
 
 class CityScreenPresenter: NSObject {
     weak var viewInput: (UIViewController & CityScreenPresenterInput)?
     
-    private var sortedCities: [City]?
-    private var copyArray: [City]?
-    private var dict: [String: [City]] = [:]
-    
-    private func filterArray(inputText: String, searchArray: [City]?) {
-        sortedCities = []
-        guard let searchArray = searchArray
-        else {
-            viewInput?.reloadTable()
-            return
-        }
-        
-        sortedCities = searchElements(in: searchArray, inputText: inputText)
-        viewInput?.reloadTable()
-    }
-}
-
-extension CityScreenPresenter: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let sortedCities = sortedCities, !sortedCities.isEmpty else {
-            return copyArray?.count ?? 0
-        }
-        
-        return sortedCities.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "CityTableViewCell", for: indexPath) as? CityTableViewCell else {
-            return UITableViewCell()
-        }
-        
-        guard let sortedCities = sortedCities, !sortedCities.isEmpty else {
-            if let city = copyArray?[indexPath.row] {
-                cell.setupCell(city: city.name, country: city.country, coordinates: city.coord)
-                return cell
-            }
-            return UITableViewCell()
-        }
-        
-        let city = sortedCities[indexPath.row]
-        cell.setupCell(city: city.name, country: city.country, coordinates: city.coord)
-        return cell
-        
-    }
-}
-
-extension CityScreenPresenter: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 70
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let city = sortedCities?[indexPath.row] else {
-            return
-        }
-        let mapVC = MapViewController(city: city)
-        viewInput?.navigationController?.pushViewController(mapVC, animated: true)
-        
-        tableView.deselectRow(at: indexPath, animated: true)
-    }
-}
-
-extension CityScreenPresenter: UITextFieldDelegate {
-    func textFieldDidChangeSelection(_ textField: UITextField) {
-        guard let inputText = textField.text,
-              inputText.count > 0
-        else {
-            sortedCities = []
-            viewInput?.reloadTable()
-            return
-        }
-        sortedCities = copyArray
-        let searchArray = dict[String(inputText.prefix(1)).lowercased()]
-        filterArray(inputText: inputText, searchArray: searchArray)
-    }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        return true
-    }
 }
 
 extension CityScreenPresenter: CityScreenPresenterOutput {
@@ -114,24 +40,28 @@ extension CityScreenPresenter: CityScreenPresenterOutput {
     func getCities(completion: @escaping () -> ()) {
         viewInput?.startIndicatorView()
         
-        DispatchQueue.global().async {
-            NetworkManeger().loadJsonFromFile { [weak self] cities in
-                if let cities = cities {
-                    self?.sortedCities = self?.sortCities(cityArray: cities)
-                    DispatchQueue.main.async {
-                        self?.viewInput?.stopIndicatorView()
-                        self?.copyArray = self?.sortedCities
-                        self?.sortedCities?.forEach { city in
-                            let key = String(city.name.prefix(1).lowercased())
-                            if self?.dict[key] == nil {
-                                self?.dict[key] = [city]
-                            } else {
-                                self?.dict[key]?.append(city)
-                            }
-                        }
-                        completion()
-                    }
+        DispatchQueue.global().async { [weak self] in
+            guard let self = self else { return }
+            
+            let cities = NetworkManager().loadJsonFromFile()
+            
+            if let cities = cities {
+                self.viewInput?.sortedCities = self.sortCities(cityArray: cities)
+                DispatchQueue.main.async {
+                    self.viewInput?.stopIndicatorView()
                     
+                    let sortedCities = self.viewInput?.sortedCities ?? []
+                    
+                    self.viewInput?.copyArray = sortedCities
+                    sortedCities.forEach { city in
+                        let key = String(city.name.prefix(1).lowercased())
+                        if self.viewInput?.dict[key] == nil {
+                            self.viewInput?.dict[key] = [city]
+                        } else {
+                            self.viewInput?.dict[key]?.append(city)
+                        }
+                    }
+                    completion()
                 }
             }
         }
@@ -164,16 +94,52 @@ extension CityScreenPresenter: CityScreenPresenterOutput {
     func searchElements(in array: [City], inputText: String) -> [City] {
         var resultArray: [City] = []
         
-        for arrayElement in array {
-            if arrayElement.name.prefix(inputText.count) > inputText {
+        var leftIndex = 0
+        var rightIndex = array.count - 1
+
+        while (leftIndex <= rightIndex) {
+            if array[leftIndex].name.prefix(inputText.count) > inputText ||
+                array[rightIndex].name.prefix(inputText.count) < inputText {
                 break
             }
             
-            if arrayElement.name.prefix(inputText.count) == inputText {
-                resultArray.append(arrayElement)
+            if array[leftIndex].name.prefix(inputText.count) < inputText {
+                leftIndex += 1
+                continue
+            } else if array[leftIndex].name.prefix(inputText.count) == inputText {
+                resultArray.append(array[leftIndex])
+                leftIndex += 1
+            }
+            
+            if array[rightIndex].name.prefix(inputText.count) > inputText {
+                rightIndex -= 1
+                continue
+            } else if array[rightIndex].name.prefix(inputText.count) == inputText {
+                resultArray.append(array[rightIndex])
+                rightIndex -= 1
             }
         }
         
-        return resultArray
+        return sortCities(cityArray: resultArray)
+    }
+    
+    func filterArray(inputText: String, searchArray: [City]?) {
+        viewInput?.sortedCities = []
+        viewInput?.updateEmptyView(hideTable: false, hideMessage: true)
+        guard let searchArray = searchArray
+        else {
+            viewInput?.reloadTable()
+            return
+        }
+        
+        let resultArray = searchElements(in: searchArray, inputText: inputText)
+        
+        guard !resultArray.isEmpty else {
+            viewInput?.updateEmptyView(hideTable: true, hideMessage: false)
+            return
+        }
+        
+        viewInput?.sortedCities = resultArray
+        viewInput?.reloadTable()
     }
 }
