@@ -40,4 +40,17 @@ class NetworkManeger {
         task.resume()
     }
     
+    func loadJsonFromFile(completion: @escaping ([City]?) -> ()) {
+        if let url = Bundle.main.url(forResource: "Cities", withExtension: "json") {
+            do {
+                let data = try Data(contentsOf: url)
+                let cities = try JSONDecoder().decode([City].self, from: data)
+                completion(cities)
+            } catch {
+                print("error:\(error)")
+                completion(nil)
+            }
+        }
+    }
+    
 }

@@ -10,6 +10,8 @@ import UIKit
 class CitiesViewController: UIViewController {
     var presenter: CityScreenPresenter?
     
+    var tableBottomConstraint: NSLayoutConstraint?
+    
     private lazy var textField: UITextField = {
         let textField = UITextField()
         textField.layer.borderWidth = 1.0
@@ -48,6 +50,9 @@ class CitiesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillDisappear), name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillAppear), name: UIResponder.keyboardWillShowNotification, object: nil)
+        
         configureTableView()
         textField.delegate = presenter
         configureUI()
@@ -55,6 +60,31 @@ class CitiesViewController: UIViewController {
         presenter?.getCities() { [weak self] in
             self?.tableView.reloadData()
         }
+    }
+    
+    @objc func keyboardWillAppear(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardSize = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue
+        else {
+            return
+        }
+        
+        let keyboardHeight = keyboardSize.size.height
+        updateBottomConstraint(with: -keyboardHeight)
+    }
+
+    @objc func keyboardWillDisappear(_ notification: Notification) {
+        updateBottomConstraint(with: 0)
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    private func updateBottomConstraint(with value: CGFloat) {
+        tableBottomConstraint?.constant = value
+        tableBottomConstraint?.isActive = true
+        view.layoutIfNeeded()
     }
     
     private func configureTableView() {
@@ -69,6 +99,17 @@ class CitiesViewController: UIViewController {
         view.addSubview(tableView)
         view.addSubview(indicatorView)
         
+        tableBottomConstraint = NSLayoutConstraint(
+            item: tableView,
+            attribute: .bottom,
+            relatedBy: .equal,
+            toItem: view.safeAreaLayoutGuide,
+            attribute: .bottom,
+            multiplier: 1,
+            constant: 0
+        )
+        tableBottomConstraint?.isActive = true
+
         NSLayoutConstraint.activate([
             textField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
             textField.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20),
@@ -76,7 +117,6 @@ class CitiesViewController: UIViewController {
             textField.heightAnchor.constraint(equalToConstant: 40),
             
             tableView.topAnchor.constraint(equalTo: textField.bottomAnchor,constant: 10),
-            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             tableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
             tableView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
             

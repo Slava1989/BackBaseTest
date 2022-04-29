@@ -22,6 +22,7 @@
 		BAC62269281AA69900997DA3 /* CityScreenBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAC62268281AA69900997DA3 /* CityScreenBuilder.swift */; };
 		BAC62271281AED1400997DA3 /* BackBaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAC62270281AED1400997DA3 /* BackBaseTests.swift */; };
 		BAC62278281B05FC00997DA3 /* CityMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAC62277281B05FC00997DA3 /* CityMock.swift */; };
+		BADF33A1281BEA72003704F4 /* Cities.json in Resources */ = {isa = PBXBuildFile; fileRef = BADF33A0281BEA72003704F4 /* Cities.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +54,7 @@
 		BAC6226E281AED1400997DA3 /* BackBaseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BackBaseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAC62270281AED1400997DA3 /* BackBaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackBaseTests.swift; sourceTree = "<group>"; };
 		BAC62277281B05FC00997DA3 /* CityMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityMock.swift; sourceTree = "<group>"; };
+		BADF33A0281BEA72003704F4 /* Cities.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Cities.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +105,7 @@
 				BA2DE27E281845E30026A6B8 /* Assets.xcassets */,
 				BA2DE280281845E30026A6B8 /* LaunchScreen.storyboard */,
 				BA2DE283281845E30026A6B8 /* Info.plist */,
+				BADF33A0281BEA72003704F4 /* Cities.json */,
 			);
 			path = BackBaseTest;
 			sourceTree = "<group>";
@@ -256,6 +259,7 @@
 			files = (
 				BA2DE282281845E30026A6B8 /* LaunchScreen.storyboard in Resources */,
 				BA2DE27F281845E30026A6B8 /* Assets.xcassets in Resources */,
+				BADF33A1281BEA72003704F4 /* Cities.json in Resources */,
 				BA53149028187B8A00A25802 /* CityTableViewCell.xib in Resources */,
 				BA2DE27D281845E20026A6B8 /* Main.storyboard in Resources */,
 			);

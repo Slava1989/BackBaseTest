@@ -79,6 +79,8 @@ extension CityScreenPresenter: UITableViewDelegate {
         }
         let mapVC = MapViewController(city: city)
         viewInput?.navigationController?.pushViewController(mapVC, animated: true)
+        
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 }
 
@@ -95,6 +97,11 @@ extension CityScreenPresenter: UITextFieldDelegate {
         let searchArray = dict[String(inputText.prefix(1)).lowercased()]
         filterArray(inputText: inputText, searchArray: searchArray)
     }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
 }
 
 extension CityScreenPresenter: CityScreenPresenterOutput {
@@ -107,27 +114,51 @@ extension CityScreenPresenter: CityScreenPresenterOutput {
     func getCities(completion: @escaping () -> ()) {
         viewInput?.startIndicatorView()
         
-        NetworkManeger().getCities { [weak self] cities in
-            if let cities = cities {
-                self?.sortedCities = self?.sortCities(cityArray: cities)
-                
-                DispatchQueue.main.async {
-                    self?.viewInput?.stopIndicatorView()
-                    self?.copyArray = self?.sortedCities
-                    self?.sortedCities?.forEach { city in
-                        let key = String(city.name.prefix(1).lowercased())
-                        if self?.dict[key] == nil {
-                            self?.dict[key] = [city]
-                        } else {
-                            self?.dict[key]?.append(city)
+        DispatchQueue.global().async {
+            NetworkManeger().loadJsonFromFile { [weak self] cities in
+                if let cities = cities {
+                    self?.sortedCities = self?.sortCities(cityArray: cities)
+                    DispatchQueue.main.async {
+                        self?.viewInput?.stopIndicatorView()
+                        self?.copyArray = self?.sortedCities
+                        self?.sortedCities?.forEach { city in
+                            let key = String(city.name.prefix(1).lowercased())
+                            if self?.dict[key] == nil {
+                                self?.dict[key] = [city]
+                            } else {
+                                self?.dict[key]?.append(city)
+                            }
                         }
+                        completion()
                     }
                     
-                    completion()
                 }
-                return
             }
         }
+        
+        
+        //MARK: Code that makes network call
+//        NetworkManeger().getCities { [weak self] cities in
+//            if let cities = cities {
+//                self?.sortedCities = self?.sortCities(cityArray: cities)
+//
+//                DispatchQueue.main.async {
+//                    self?.viewInput?.stopIndicatorView()
+//                    self?.copyArray = self?.sortedCities
+//                    self?.sortedCities?.forEach { city in
+//                        let key = String(city.name.prefix(1).lowercased())
+//                        if self?.dict[key] == nil {
+//                            self?.dict[key] = [city]
+//                        } else {
+//                            self?.dict[key]?.append(city)
+//                        }
+//                    }
+//
+//                    completion()
+//                }
+//                return
+//            }
+//        }
     }
     
     func searchElements(in array: [City], inputText: String) -> [City] {
