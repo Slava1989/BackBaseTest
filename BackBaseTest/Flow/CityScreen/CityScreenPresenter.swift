@@ -103,9 +103,13 @@ extension CityScreenPresenter: CityScreenPresenterOutput {
                 break
             }
             
+            if leftIndex == rightIndex {
+                resultArray.append(array[leftIndex])
+                break
+            }
+            
             if array[leftIndex].name.prefix(inputText.count) < inputText {
                 leftIndex += 1
-                continue
             } else if array[leftIndex].name.prefix(inputText.count) == inputText {
                 resultArray.append(array[leftIndex])
                 leftIndex += 1
@@ -113,7 +117,6 @@ extension CityScreenPresenter: CityScreenPresenterOutput {
             
             if array[rightIndex].name.prefix(inputText.count) > inputText {
                 rightIndex -= 1
-                continue
             } else if array[rightIndex].name.prefix(inputText.count) == inputText {
                 resultArray.append(array[rightIndex])
                 rightIndex -= 1
