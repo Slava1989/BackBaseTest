@@ -65,30 +65,6 @@ extension CityScreenPresenter: CityScreenPresenterOutput {
                 }
             }
         }
-        
-        
-        //MARK: Code that makes network call
-//        NetworkManeger().getCities { [weak self] cities in
-//            if let cities = cities {
-//                self?.sortedCities = self?.sortCities(cityArray: cities)
-//
-//                DispatchQueue.main.async {
-//                    self?.viewInput?.stopIndicatorView()
-//                    self?.copyArray = self?.sortedCities
-//                    self?.sortedCities?.forEach { city in
-//                        let key = String(city.name.prefix(1).lowercased())
-//                        if self?.dict[key] == nil {
-//                            self?.dict[key] = [city]
-//                        } else {
-//                            self?.dict[key]?.append(city)
-//                        }
-//                    }
-//
-//                    completion()
-//                }
-//                return
-//            }
-//        }
     }
     
     func searchElements(in array: [City], inputText: String) -> [City] {
@@ -132,6 +108,7 @@ extension CityScreenPresenter: CityScreenPresenterOutput {
         guard let searchArray = searchArray
         else {
             viewInput?.reloadTable()
+            viewInput?.updateEmptyView(hideTable: true, hideMessage: false)
             return
         }
         
